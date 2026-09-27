@@ -1,794 +1,343 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>An Social</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>An Social</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --blue:#2563eb; --blue2:#3b82f6; --ink:#172033; --muted:#7b879c;
+  --line:#e8edf5; --bg:#f5f8fd; --card:#fff; --green:#20c77a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:Inter,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+button,input{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  height:72px;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:24px;padding:0 28px;position:sticky;top:0;z-index:20
+}
+.brand{display:flex;align-items:center;gap:11px;min-width:215px}
+.brand-logo{
+  width:44px;height:44px;border-radius:15px;background:linear-gradient(135deg,#60a5fa,#2563eb);
+  display:grid;place-items:center;color:#fff;font-size:23px;box-shadow:0 8px 20px #2563eb30
+}
+.brand strong{font-size:21px}.brand small{display:block;color:var(--muted);margin-top:2px}
+.search{flex:1;max-width:460px;position:relative}
+.search input{
+  width:100%;height:44px;border:0;border-radius:14px;background:#f3f6fb;
+  padding:0 18px 0 44px;outline:none;color:var(--ink)
+}
+.search span{position:absolute;left:16px;top:11px;color:#8a96aa}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:16px}
+.icon-btn{border:0;background:transparent;font-size:20px;color:#60708a;position:relative}
+.dot{position:absolute;width:8px;height:8px;border-radius:50%;background:#ef4444;right:-1px;top:0}
+.account{display:flex;align-items:center;gap:9px;border:0;background:transparent;text-align:left}
+.account-name{font-weight:700}.account-status{font-size:12px;color:var(--muted)}
+.chev{color:#8490a3}
 
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f4f7;
-      color: #222;
-    }
-    button, input { font: inherit; }
-    button { cursor: pointer; }
-    .app {
-      max-width: 900px;
-      min-height: 100vh;
-      margin: auto;
-      background: white;
-      display: flex;
-      flex-direction: column;
-    }
-    .header {
-      padding: 14px 16px;
-      background: #2563eb;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-    .header h1 { margin: 0; font-size: 21px; }
-    .header small { opacity: .85; }
-    .header button {
-      border: 0;
-      background: rgba(255,255,255,.16);
-      color: white;
-      padding: 8px 11px;
-      border-radius: 8px;
-    }
+.layout{display:flex;flex:1;min-height:calc(100vh - 72px);max-width:1440px;width:100%;margin:auto}
+.sidebar{
+  width:220px;padding:22px 12px;border-right:1px solid var(--line);background:#fff
+}
+.nav{display:flex;flex-direction:column;gap:7px}
+.nav button{
+  border:0;background:transparent;color:#53627a;padding:13px 14px;border-radius:14px;
+  display:flex;align-items:center;gap:14px;text-align:left;font-size:15px
+}
+.nav button.active{background:#eaf2ff;color:var(--blue);font-weight:700}
+.nav .count{margin-left:auto;background:var(--blue);color:#fff;border-radius:20px;min-width:22px;height:22px;display:grid;place-items:center;font-size:11px}
+.side-card{
+  margin:55px 10px 0;padding:24px 14px;border-radius:18px;
+  background:linear-gradient(180deg,#eff6ff,#eef5ff);text-align:center;color:#55709a
+}
+.side-card .big{font-size:42px}.side-card strong{display:block;color:#47638d;margin:8px 0}
 
-    .auth {
-      padding: 22px 16px;
-      max-width: 480px;
-      width: 100%;
-      margin: auto;
-    }
-    .auth h2 { margin-top: 0; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-    .tabs button {
-      flex: 1;
-      border: 1px solid #ddd;
-      background: #f5f5f5;
-      padding: 11px;
-      border-radius: 9px;
-    }
-    .tabs button.active {
-      background: #2563eb;
-      color: white;
-      border-color: #2563eb;
-    }
-    .field { margin-bottom: 10px; }
-    .field label {
-      display: block;
-      font-size: 13px;
-      color: #555;
-      margin-bottom: 5px;
-    }
-    .field input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 9px;
-      outline: none;
-    }
-    .primary {
-      width: 100%;
-      border: 0;
-      background: #2563eb;
-      color: white;
-      padding: 12px;
-      border-radius: 9px;
-      font-weight: bold;
-    }
-    .notice {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #666;
-      white-space: pre-wrap;
-    }
+.content{flex:1;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px}
+.chat-card,.right-card{
+  background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 10px 35px #1f3b6808
+}
+.chat-card{min-height:calc(100vh - 116px);display:flex;flex-direction:column;overflow:hidden}
+.chat-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.chat-icon{width:44px;height:44px;border-radius:14px;background:#eaf2ff;color:var(--blue);display:grid;place-items:center;font-size:22px}
+.chat-head h2{font-size:19px;margin:0}.chat-head small{color:#6e7d94}
+.online{color:#18a765;font-weight:600}.new-btn{margin-left:auto;border:0;background:var(--blue);color:#fff;border-radius:11px;padding:11px 15px;font-weight:700;box-shadow:0 8px 18px #2563eb2a}
+#status{text-align:center;font-size:12px;padding:6px;color:#6d7a90;background:#fbfcfe}
+#messages{flex:1;overflow:auto;padding:10px 18px;background:#fff}
+.message{
+  display:flex;gap:12px;padding:13px 8px;border-bottom:1px solid #f0f3f8
+}
+.message:hover{background:#fbfcff;border-radius:14px}
+.message-body{flex:1;min-width:0}
+.message-top{display:flex;justify-content:space-between;gap:10px}
+.message .name{font-weight:750;color:#1d4ed8}.message .time{font-size:11px;color:#9aa5b5}
+.message .text{margin-top:5px;color:#58667c;white-space:pre-wrap;word-break:break-word}
+.composer{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px;background:#fff}
+.composer input{flex:1;border:1px solid #e1e7f0;background:#fafcff;border-radius:13px;padding:12px 14px;outline:none}
+.composer input:focus{border-color:#93b4ff;box-shadow:0 0 0 3px #2563eb12}
+.attach{width:44px;border:0;background:#f1f5fb;color:#63728a;border-radius:12px}
+.send{width:48px;border:0;background:var(--blue);color:#fff;border-radius:12px;font-size:19px}
 
-    .main { display: none; flex: 1; min-height: 0; }
-    .sidebar {
-      width: 250px;
-      border-right: 1px solid #ddd;
-      background: #fafafa;
-      overflow-y: auto;
-    }
-    .profile {
-      padding: 14px;
-      border-bottom: 1px solid #ddd;
-    }
-    .profile-row, .person {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: #dbeafe;
-      flex: 0 0 auto;
-    }
-    .avatar.small { width: 34px; height: 34px; }
-    .initial {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #dbeafe;
-      color: #1d4ed8;
-      font-weight: bold;
-      flex: 0 0 auto;
-    }
-    .profile-name { font-weight: bold; }
-    .profile-email { font-size: 11px; color: #777; overflow: hidden; text-overflow: ellipsis; }
-    .avatar-actions {
-      display: flex;
-      gap: 7px;
-      margin-top: 10px;
-    }
-    .avatar-actions label, .avatar-actions button {
-      border: 1px solid #ddd;
-      background: white;
-      padding: 7px 9px;
-      border-radius: 7px;
-      font-size: 12px;
-    }
-    #avatarFile { display: none; }
+.right{display:flex;flex-direction:column;gap:16px}
+.right-card{padding:18px}
+.profile-card{text-align:center}
+.profile-large{margin:2px auto 10px}
+.profile-card h3{margin:5px 0 3px;font-size:18px}.profile-card p{margin:0;color:var(--muted);font-size:13px}
+.profile-actions{display:flex;gap:8px;margin-top:15px}
+.profile-actions label,.profile-actions button{flex:1;border:0;border-radius:10px;padding:10px;background:#eaf2ff;color:var(--blue);font-weight:700;font-size:12px}
+#avatarFile{display:none}
+.people-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.people-head strong{font-size:15px}.people-count{background:#f1f5fa;color:#6d7b91;padding:4px 8px;border-radius:10px;font-size:11px}
+.person{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #f0f3f7}
+.person:last-child{border-bottom:0}.person-info{flex:1;min-width:0}
+.person-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.person-status{font-size:11px;color:#18a765;margin-top:2px}
+.chevron{color:#9ba7b9}
+.info-card{background:linear-gradient(180deg,#f0f7ff,#fff);overflow:hidden;position:relative}
+.info-card .circle{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#60a5fa,#6366f1);display:grid;place-items:center;color:white;font-size:21px}
+.info-card h3{color:#2451a7;margin:12px 0 7px}.info-card p{color:#71809a;line-height:1.5;margin:0;font-size:13px}
 
-    .people-title {
-      padding: 11px 14px 6px;
-      font-size: 12px;
-      color: #777;
-      font-weight: bold;
-    }
-    .person {
-      padding: 9px 14px;
-    }
-    .person-name { font-size: 14px; font-weight: 600; }
-    .online { color: #16a34a; font-size: 11px; }
+.avatar,.initial{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:0 0 auto}
+.avatar.small{width:38px;height:38px}.avatar.large{width:76px;height:76px}
+.initial{display:grid;place-items:center;background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1d4ed8;font-weight:800;font-size:17px}
+.initial.large{width:76px;height:76px;font-size:27px}
+.empty{text-align:center;color:#909caf;padding:35px 10px}
+.auth-wrap{min-height:100vh;display:grid;place-items:center;padding:22px;background:linear-gradient(135deg,#eff6ff,#f8fbff)}
+.auth-card{width:min(430px,100%);background:#fff;border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:0 20px 60px #1f3b6815}
+.auth-brand{display:flex;align-items:center;gap:10px;margin-bottom:25px}
+.auth-card h2{margin:0 0 6px}.auth-card .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+.tabs{display:flex;gap:7px;background:#f3f6fb;padding:4px;border-radius:12px;margin-bottom:17px}
+.tabs button{flex:1;border:0;background:transparent;padding:10px;border-radius:9px;color:#68768b}
+.tabs button.active{background:#fff;color:var(--blue);font-weight:700;box-shadow:0 2px 8px #1f3b6810}
+.field{margin-bottom:11px}.field label{display:block;font-size:12px;color:#68768b;margin:0 0 5px}
+.field input{width:100%;padding:12px;border:1px solid #dfe6f0;border-radius:11px;outline:none}
+.auth-submit{width:100%;border:0;background:var(--blue);color:#fff;padding:12px;border-radius:11px;font-weight:700}
+.notice{margin-top:12px;color:#6d7a90;font-size:13px;white-space:pre-wrap}
+#mainBox{display:none}
 
-    .chat {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
-    .chat-title {
-      padding: 12px 15px;
-      border-bottom: 1px solid #ddd;
-      font-weight: bold;
-    }
-    #status {
-      text-align: center;
-      font-size: 12px;
-      padding: 5px;
-      color: #777;
-      background: #fafafa;
-    }
-    #messages {
-      flex: 1;
-      min-height: 260px;
-      overflow-y: auto;
-      padding: 15px;
-      background: #f7f8fa;
-    }
-    .message {
-      display: flex;
-      gap: 9px;
-      margin-bottom: 12px;
-    }
-    .message-body {
-      min-width: 0;
-      background: white;
-      padding: 9px 11px;
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.08);
-    }
-    .message .name {
-      font-weight: bold;
-      color: #2563eb;
-      margin-bottom: 3px;
-    }
-    .message .text {
-      word-wrap: break-word;
-      white-space: pre-wrap;
-    }
-    .message .time {
-      margin-top: 5px;
-      font-size: 10px;
-      color: #999;
-    }
-    .empty {
-      text-align: center;
-      color: #888;
-      margin-top: 30px;
-    }
-    .send-box {
-      display: flex;
-      gap: 8px;
-      padding: 10px;
-      border-top: 1px solid #ddd;
-      background: white;
-    }
-    .send-box input {
-      flex: 1;
-      min-width: 0;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      outline: none;
-    }
-    .send-box button {
-      border: 0;
-      background: #2563eb;
-      color: white;
-      padding: 0 18px;
-      border-radius: 10px;
-      font-weight: bold;
-    }
-    .send-box button:disabled { opacity: .5; }
-
-    @media (max-width: 650px) {
-      .main { flex-direction: column; }
-      .sidebar {
-        width: 100%;
-        border-right: 0;
-        border-bottom: 1px solid #ddd;
-        max-height: 260px;
-      }
-      .people-list {
-        display: flex;
-        overflow-x: auto;
-        padding-bottom: 5px;
-      }
-      .person { min-width: 120px; }
-      .profile { padding: 10px 14px; }
-    }
-  </style>
+@media(max-width:900px){
+  .sidebar{width:190px}.content{grid-template-columns:1fr}.right{display:none}
+}
+@media(max-width:650px){
+  .topbar{height:64px;padding:0 12px;gap:10px}.brand{min-width:auto}.brand small,.search,.account-name,.account-status,.chev{display:none}.brand strong{font-size:18px}
+  .top-actions{gap:10px}
+  .layout{min-height:calc(100vh - 64px)}
+  .sidebar{width:72px;padding:12px 8px}.nav button{justify-content:center;padding:12px}.nav button span.label,.nav .count,.side-card{display:none}
+  .content{padding:10px}.chat-card{min-height:calc(100vh - 84px);border-radius:16px}
+  .chat-head{padding:13px}.chat-head h2{font-size:16px}.chat-head small{font-size:11px}.new-btn{display:none}
+  #messages{padding:4px 10px}.composer{padding:8px}
+}
+</style>
 </head>
 
 <body>
-<div class="app">
-
-  <div class="header">
-    <div>
-      <h1>💬 An Social</h1>
-      <small>Mạng xã hội mini</small>
+<div id="authBox" class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="brand-logo">💬</div>
+      <div><strong>An Social</strong><small> Kết nối mọi người</small></div>
     </div>
-    <button id="logoutButton" style="display:none">Đăng xuất</button>
-  </div>
-
-  <!-- AUTH -->
-  <section class="auth" id="authBox">
     <h2 id="authTitle">Đăng nhập</h2>
-
+    <div class="sub">Chào mừng bạn quay lại An Social</div>
     <div class="tabs">
       <button id="loginTab" class="active" type="button">Đăng nhập</button>
       <button id="signupTab" type="button">Đăng ký</button>
     </div>
-
     <div class="field" id="usernameField" style="display:none">
-      <label>Tên hiển thị</label>
-      <input id="authUsername" maxlength="30" placeholder="Ví dụ: An">
+      <label>Tên hiển thị</label><input id="authUsername" maxlength="30" placeholder="Ví dụ: An">
     </div>
-
-    <div class="field">
-      <label>Email</label>
-      <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com">
-    </div>
-
-    <div class="field">
-      <label>Mật khẩu</label>
-      <input id="authPassword" type="password" autocomplete="current-password" placeholder="Ít nhất 6 ký tự">
-    </div>
-
-    <button class="primary" id="authButton" type="button">Đăng nhập</button>
+    <div class="field"><label>Email</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+    <div class="field"><label>Mật khẩu</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Ít nhất 6 ký tự"></div>
+    <button class="auth-submit" id="authButton" type="button">Đăng nhập</button>
     <div class="notice" id="authNotice"></div>
-  </section>
+  </div>
+</div>
 
-  <!-- MAIN -->
-  <section class="main" id="mainBox">
+<div id="mainBox" class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">💬</div>
+      <div><strong>An Social</strong><small>Kết nối mọi người</small></div>
+    </div>
+    <div class="search"><span>⌕</span><input placeholder="Tìm kiếm người dùng..." id="searchInput"></div>
+    <div class="top-actions">
+      <button class="icon-btn" type="button">♧<i class="dot"></i></button>
+      <button class="account" id="accountButton" type="button">
+        <div id="topAvatar"></div>
+        <div><div class="account-name" id="topName">...</div><div class="account-status">Đang online</div></div>
+        <span class="chev">⌄</span>
+      </button>
+      <button id="logoutButton" class="icon-btn" title="Đăng xuất">⇥</button>
+    </div>
+  </header>
 
+  <div class="layout">
     <aside class="sidebar">
-      <div class="profile">
-        <div class="profile-row">
-          <div id="myAvatar"></div>
-          <div style="min-width:0">
-            <div class="profile-name" id="myName">...</div>
-            <div class="profile-email" id="myEmail">...</div>
-          </div>
-        </div>
-
-        <div class="avatar-actions">
-          <label for="avatarFile">📷 Đổi avatar</label>
-          <button id="refreshUsers" type="button">↻</button>
-          <input id="avatarFile" type="file" accept="image/*">
-        </div>
-      </div>
-
-      <div class="people-title">👥 Người dùng</div>
-      <div class="people-list" id="peopleList">
-        <div class="empty">Đang tải...</div>
-      </div>
+      <nav class="nav">
+        <button class="active" type="button"><span>💬</span><span class="label">Chat</span><span class="count">2</span></button>
+        <button type="button"><span>♙</span><span class="label">Người dùng</span></button>
+        <button type="button"><span>◎</span><span class="label">Hồ sơ</span></button>
+        <button type="button"><span>⚙</span><span class="label">Cài đặt</span></button>
+      </nav>
+      <div class="side-card"><div class="big">👥</div><strong>Cùng nhau<br>tạo nên cộng đồng tuyệt vời!</strong><div>♡</div></div>
     </aside>
 
-    <div class="chat">
-      <div class="chat-title">💬 Phòng chat cộng đồng</div>
+    <main class="content">
+      <section class="chat-card">
+        <div class="chat-head">
+          <div class="chat-icon">💬</div>
+          <div><h2>Phòng chat cộng đồng</h2><small>🟢 <span id="onlineText">Mọi người</span></small></div>
+          <button class="new-btn" type="button" onclick="messageInput.focus()">＋ Tin nhắn mới</button>
+        </div>
+        <div id="status">Đang kết nối...</div>
+        <div id="messages"><div class="empty">Đang tải tin nhắn...</div></div>
+        <form class="composer" id="sendForm">
+          <button class="attach" type="button">☺</button>
+          <input id="messageInput" maxlength="1000" placeholder="Nhập tin nhắn..." autocomplete="off">
+          <button class="attach" type="button">▧</button>
+          <button class="send" id="sendButton" type="submit">➤</button>
+        </form>
+      </section>
 
-      <div id="status">Đang kết nối...</div>
+      <aside class="right">
+        <div class="right-card profile-card">
+          <div id="myAvatar" class="profile-large"></div>
+          <h3 id="myName">...</h3><p id="myEmail">...</p>
+          <div class="profile-actions">
+            <label for="avatarFile">✎ Đổi avatar</label>
+            <button id="refreshUsers" type="button">↻ Làm mới</button>
+          </div>
+          <input id="avatarFile" type="file" accept="image/*">
+        </div>
 
-      <div id="messages">
-        <div class="empty">Đang tải tin nhắn...</div>
-      </div>
+        <div class="right-card">
+          <div class="people-head"><strong>🟢 Người dùng trực tuyến</strong><span class="people-count" id="peopleCount">0</span></div>
+          <div id="peopleList"><div class="empty">Đang tải...</div></div>
+        </div>
 
-      <form class="send-box" id="sendForm">
-        <input id="messageInput" type="text" maxlength="1000"
-               placeholder="Nhập tin nhắn..." autocomplete="off">
-        <button id="sendButton" type="submit">Gửi</button>
-      </form>
-    </div>
-
-  </section>
+        <div class="right-card info-card">
+          <div class="circle">👥</div>
+          <h3>An Social</h3>
+          <p>Nơi kết nối bạn bè, trò chuyện và chia sẻ những khoảnh khắc thú vị.</p>
+          <div style="text-align:right;font-size:24px;color:#6366f1;margin-top:10px">♡</div>
+        </div>
+      </aside>
+    </main>
+  </div>
 </div>
 
 <script>
-  const SUPABASE_URL = "https://imrzrizgpdqqvwtpdubw.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8PDE1uUUqeuA33pyaqjQhA_VBcFWtNY";
+const SUPABASE_URL="https://imrzrizgpdqqvwtpdubw.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_8PDE1uUUqeuA33pyaqjQhA_VBcFWtNY";
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 
-  const supabaseClient = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
+const authBox=document.getElementById("authBox"),mainBox=document.getElementById("mainBox");
+const authTitle=document.getElementById("authTitle"),authButton=document.getElementById("authButton"),authNotice=document.getElementById("authNotice");
+const loginTab=document.getElementById("loginTab"),signupTab=document.getElementById("signupTab"),usernameField=document.getElementById("usernameField");
+const authUsername=document.getElementById("authUsername"),authEmail=document.getElementById("authEmail"),authPassword=document.getElementById("authPassword");
+const logoutButton=document.getElementById("logoutButton"),myAvatar=document.getElementById("myAvatar"),myName=document.getElementById("myName"),myEmail=document.getElementById("myEmail");
+const topAvatar=document.getElementById("topAvatar"),topName=document.getElementById("topName"),avatarFile=document.getElementById("avatarFile");
+const peopleList=document.getElementById("peopleList"),peopleCount=document.getElementById("peopleCount"),refreshUsers=document.getElementById("refreshUsers");
+const messagesBox=document.getElementById("messages"),messageInput=document.getElementById("messageInput"),sendForm=document.getElementById("sendForm"),sendButton=document.getElementById("sendButton"),statusBox=document.getElementById("status");
+let authMode="login",currentUser=null,profilesCache={};
 
-  const authBox = document.getElementById("authBox");
-  const mainBox = document.getElementById("mainBox");
-  const authTitle = document.getElementById("authTitle");
-  const authButton = document.getElementById("authButton");
-  const authNotice = document.getElementById("authNotice");
-  const loginTab = document.getElementById("loginTab");
-  const signupTab = document.getElementById("signupTab");
-  const usernameField = document.getElementById("usernameField");
-  const authUsername = document.getElementById("authUsername");
-  const authEmail = document.getElementById("authEmail");
-  const authPassword = document.getElementById("authPassword");
-  const logoutButton = document.getElementById("logoutButton");
-  const myAvatar = document.getElementById("myAvatar");
-  const myName = document.getElementById("myName");
-  const myEmail = document.getElementById("myEmail");
-  const avatarFile = document.getElementById("avatarFile");
-  const peopleList = document.getElementById("peopleList");
-  const refreshUsers = document.getElementById("refreshUsers");
-  const messagesBox = document.getElementById("messages");
-  const messageInput = document.getElementById("messageInput");
-  const sendForm = document.getElementById("sendForm");
-  const sendButton = document.getElementById("sendButton");
-  const statusBox = document.getElementById("status");
+function escapeHtml(t){const d=document.createElement("div");d.textContent=t??"";return d.innerHTML}
+function initials(n){return escapeHtml((n||"?").trim().charAt(0).toUpperCase())}
+function avatarHtml(p,small=false,large=false){
+  const cls=large?"avatar large":small?"avatar small":"avatar";
+  if(p&&p.avatar_url)return `<img class="${cls}" src="${escapeHtml(p.avatar_url)}" alt="avatar">`;
+  return `<div class="${large?"initial large":small?"initial small":"initial"}">${initials(p?.username||"?")}</div>`;
+}
+function formatTime(s){return new Date(s).toLocaleString("vi-VN",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
 
-  let authMode = "login";
-  let currentUser = null;
-  let profilesCache = {};
+function setAuthMode(m){
+  authMode=m;const signup=m==="signup";
+  authTitle.textContent=signup?"Tạo tài khoản":"Đăng nhập";
+  authButton.textContent=signup?"Đăng ký":"Đăng nhập";
+  usernameField.style.display=signup?"block":"none";
+  loginTab.classList.toggle("active",!signup);signupTab.classList.toggle("active",signup);authNotice.textContent="";
+}
+loginTab.onclick=()=>setAuthMode("login");signupTab.onclick=()=>setAuthMode("signup");
 
-  function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text ?? "";
-    return div.innerHTML;
+authButton.onclick=async()=>{
+  const email=authEmail.value.trim(),password=authPassword.value,username=authUsername.value.trim();
+  if(!email||!password){authNotice.textContent="Hãy nhập email và mật khẩu.";return}
+  if(password.length<6){authNotice.textContent="Mật khẩu cần ít nhất 6 ký tự.";return}
+  if(authMode==="signup"&&!username){authNotice.textContent="Hãy nhập tên hiển thị.";return}
+  authButton.disabled=true;authNotice.textContent="Đang xử lý...";
+  if(authMode==="signup"){
+    const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{username}}});
+    authNotice.textContent=error?"❌ "+error.message:(data.session?"✅ Đăng ký thành công.":"✅ Kiểm tra email để xác nhận tài khoản rồi đăng nhập.");
+  }else{
+    const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+    authNotice.textContent=error?"❌ "+error.message:"";
   }
+  authButton.disabled=false;
+};
+logoutButton.onclick=async()=>await supabaseClient.auth.signOut();
 
-  function initials(name) {
-    const s = (name || "?").trim();
-    return escapeHtml(s.charAt(0).toUpperCase());
+async function getMyProfile(){
+  if(!currentUser)return null;
+  let {data,error}=await supabaseClient.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
+  if(error){console.error(error);return null}
+  if(!data){
+    const fallback=currentUser.user_metadata?.username||currentUser.email?.split("@")[0]||"User";
+    const r=await supabaseClient.from("profiles").insert({id:currentUser.id,username:fallback}).select().single();
+    data=r.data;
   }
+  return data;
+}
 
-  function avatarHtml(profile, small = false) {
-    const cls = small ? "avatar small" : "avatar";
-    if (profile && profile.avatar_url) {
-      return `<img class="${cls}" src="${escapeHtml(profile.avatar_url)}" alt="avatar">`;
-    }
-    return `<div class="${small ? "avatar small" : "initial"}">${initials(profile?.username || "?")}</div>`;
+async function loadUsers(){
+  const {data,error}=await supabaseClient.from("profiles").select("id,username,avatar_url,created_at").order("username",{ascending:true});
+  if(error){
+    console.error(error);
+    peopleList.innerHTML=`<div class="empty">Không tải được danh sách người dùng.<br><small>${escapeHtml(error.message)}</small></div>`;
+    peopleCount.textContent="!";
+    return;
   }
-
-  function formatTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  }
-
-  function setAuthMode(mode) {
-    authMode = mode;
-    const signup = mode === "signup";
-
-    authTitle.textContent = signup ? "Tạo tài khoản" : "Đăng nhập";
-    authButton.textContent = signup ? "Đăng ký" : "Đăng nhập";
-    usernameField.style.display = signup ? "block" : "none";
-    loginTab.classList.toggle("active", !signup);
-    signupTab.classList.toggle("active", signup);
-    authNotice.textContent = "";
-  }
-
-  loginTab.onclick = () => setAuthMode("login");
-  signupTab.onclick = () => setAuthMode("signup");
-
-  authButton.onclick = async () => {
-    const email = authEmail.value.trim();
-    const password = authPassword.value;
-    const username = authUsername.value.trim();
-
-    if (!email || !password) {
-      authNotice.textContent = "Hãy nhập email và mật khẩu.";
-      return;
-    }
-
-    if (password.length < 6) {
-      authNotice.textContent = "Mật khẩu cần ít nhất 6 ký tự.";
-      return;
-    }
-
-    if (authMode === "signup" && !username) {
-      authNotice.textContent = "Hãy nhập tên hiển thị.";
-      return;
-    }
-
-    authButton.disabled = true;
-    authNotice.textContent = "Đang xử lý...";
-
-    if (authMode === "signup") {
-      const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { username }
-        }
-      });
-
-      if (error) {
-        authNotice.textContent = "❌ " + error.message;
-      } else if (data.session) {
-        authNotice.textContent = "✅ Đăng ký thành công.";
-      } else {
-        authNotice.textContent =
-          "✅ Đăng ký thành công. Hãy kiểm tra email để xác nhận tài khoản rồi đăng nhập.";
-      }
-    } else {
-      const { error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        authNotice.textContent = "❌ " + error.message;
-      } else {
-        authNotice.textContent = "";
-      }
-    }
-
-    authButton.disabled = false;
-  };
-
-  logoutButton.onclick = async () => {
-    await supabaseClient.auth.signOut();
-  };
-
-  async function getMyProfile() {
-    if (!currentUser) return null;
-
-    let { data, error } = await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("id", currentUser.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error(error);
-      return null;
-    }
-
-    if (!data) {
-      const fallbackName =
-        currentUser.user_metadata?.username ||
-        currentUser.email?.split("@")[0] ||
-        "User";
-
-      const result = await supabaseClient
-        .from("profiles")
-        .insert({
-          id: currentUser.id,
-          username: fallbackName
-        })
-        .select()
-        .single();
-
-      data = result.data;
-    }
-
-    return data;
-  }
-
-  async function loadUsers() {
-    const { data, error } = await supabaseClient
-      .from("profiles")
-      .select("id, username, avatar_url, created_at")
-      .order("username", { ascending: true });
-
-    if (error) {
-      console.error(error);
-      peopleList.innerHTML = `<div class="empty">Không tải được danh sách người dùng.</div>`;
-      return;
-    }
-
-    profilesCache = {};
-    (data || []).forEach(p => profilesCache[p.id] = p);
-
-    peopleList.innerHTML = "";
-
-    if (!data || data.length === 0) {
-      peopleList.innerHTML = `<div class="empty">Chưa có người dùng.</div>`;
-      return;
-    }
-
-    data.forEach(profile => {
-      const div = document.createElement("div");
-      div.className = "person";
-      div.innerHTML = `
-        ${avatarHtml(profile, true)}
-        <div>
-          <div class="person-name">${escapeHtml(profile.username)}</div>
-          <div class="online">● Thành viên</div>
-        </div>
-      `;
-      peopleList.appendChild(div);
-    });
-
-    if (currentUser) {
-      const me = profilesCache[currentUser.id];
-      if (me) {
-        myName.textContent = me.username;
-        myAvatar.innerHTML = avatarHtml(me);
-      }
-    }
-  }
-
-  async function uploadAvatar(file) {
-    if (!currentUser || !file) return;
-
-    if (!file.type.startsWith("image/")) {
-      alert("Vui lòng chọn file ảnh.");
-      return;
-    }
-
-    if (file.size > 3 * 1024 * 1024) {
-      alert("Ảnh tối đa 3MB.");
-      return;
-    }
-
-    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-    const path = `${currentUser.id}/${Date.now()}.${ext}`;
-
-    avatarFile.disabled = true;
-
-    const { error: uploadError } = await supabaseClient.storage
-      .from("avatars")
-      .upload(path, file, {
-        cacheControl: "3600",
-        upsert: false
-      });
-
-    if (uploadError) {
-      console.error(uploadError);
-      alert("Không tải được avatar: " + uploadError.message);
-      avatarFile.disabled = false;
-      return;
-    }
-
-    const { data: publicData } = supabaseClient.storage
-      .from("avatars")
-      .getPublicUrl(path);
-
-    const avatarUrl = publicData.publicUrl;
-
-    const { error: updateError } = await supabaseClient
-      .from("profiles")
-      .update({ avatar_url: avatarUrl })
-      .eq("id", currentUser.id);
-
-    if (updateError) {
-      console.error(updateError);
-      alert("Không lưu được avatar: " + updateError.message);
-    } else {
-      await loadUsers();
-      alert("✅ Đã đổi avatar.");
-    }
-
-    avatarFile.disabled = false;
-    avatarFile.value = "";
-  }
-
-  avatarFile.addEventListener("change", () => {
-    uploadAvatar(avatarFile.files[0]);
+  profilesCache={};(data||[]).forEach(p=>profilesCache[p.id]=p);
+  peopleCount.textContent=(data||[]).length;
+  peopleList.innerHTML="";
+  if(!data?.length){peopleList.innerHTML=`<div class="empty">Chưa có người dùng.</div>`;return}
+  data.forEach(p=>{
+    const d=document.createElement("div");d.className="person";
+    d.innerHTML=`${avatarHtml(p,true)}<div class="person-info"><div class="person-name">${escapeHtml(p.username)}</div><div class="person-status">● Đang online</div></div><div class="chevron">›</div>`;
+    peopleList.appendChild(d);
   });
-
-  refreshUsers.onclick = loadUsers;
-
-  function showMessage(message) {
-    const empty = messagesBox.querySelector(".empty");
-    if (empty) empty.remove();
-
-    if (messagesBox.querySelector(`[data-id="${message.id}"]`)) return;
-
-    const profile = profilesCache[message.user_id] || {
-      username: message.username || "User",
-      avatar_url: ""
-    };
-
-    const div = document.createElement("div");
-    div.className = "message";
-    div.dataset.id = message.id;
-
-    div.innerHTML = `
-      ${avatarHtml(profile, true)}
-      <div class="message-body">
-        <div class="name">${escapeHtml(profile.username || message.username || "User")}</div>
-        <div class="text">${escapeHtml(message.content)}</div>
-        <div class="time">${formatTime(message.created_at)}</div>
-      </div>
-    `;
-
-    messagesBox.appendChild(div);
-    messagesBox.scrollTop = messagesBox.scrollHeight;
+  const me=profilesCache[currentUser?.id];
+  if(me){
+    myName.textContent=me.username;topName.textContent=me.username;
+    myAvatar.innerHTML=avatarHtml(me,false,true);topAvatar.innerHTML=avatarHtml(me,true);
   }
+}
 
-  async function loadMessages() {
-    const { data, error } = await supabaseClient
-      .from("messages")
-      .select("*")
-      .order("created_at", { ascending: true })
-      .limit(100);
+async function uploadAvatar(file){
+  if(!currentUser||!file)return;
+  if(!file.type.startsWith("image/"))return alert("Vui lòng chọn file ảnh.");
+  if(file.size>3*1024*1024)return alert("Ảnh tối đa 3MB.");
+  const ext=(file.name.split(".").pop()||"jpg").toLowerCase(),path=`${currentUser.id}/${Date.now()}.${ext}`;
+  avatarFile.disabled=true;
+  const {error:ue}=await supabaseClient.storage.from("avatars").upload(path,file,{cacheControl:"3600",upsert:false});
+  if(ue){alert("Không tải được avatar: "+ue.message);avatarFile.disabled=false;return}
+  const {data:pd}=supabaseClient.storage.from("avatars").getPublicUrl(path);
+  const {error:pe}=await supabaseClient.from("profiles").update({avatar_url:pd.publicUrl}).eq("id",currentUser.id);
+  if(pe)alert("Không lưu được avatar: "+pe.message);else await loadUsers();
+  avatarFile.disabled=false;avatarFile.value="";
+}
+avatarFile.onchange=()=>uploadAvatar(avatarFile.files[0]);
+refreshUsers.onclick=loadUsers;
 
-    if (error) {
-      console.error(error);
-      messagesBox.innerHTML = `
-        <div class="empty">
-          Không tải được tin nhắn.<br><br>
-          ${escapeHtml(error.message)}
-        </div>
-      `;
-      statusBox.textContent = "❌ Lỗi kết nối";
-      return;
-    }
-
-    messagesBox.innerHTML = "";
-
-    if (!data || data.length === 0) {
-      messagesBox.innerHTML = `
-        <div class="empty">
-          Chưa có tin nhắn nào.<br>
-          Hãy gửi tin nhắn đầu tiên!
-        </div>
-      `;
-      return;
-    }
-
-    data.forEach(showMessage);
-  }
-
-  sendForm.addEventListener("submit", async event => {
-    event.preventDefault();
-
-    if (!currentUser) return;
-
-    const content = messageInput.value.trim();
-
-    if (!content) return;
-    if (content.length > 1000) {
-      alert("Tin nhắn tối đa 1000 ký tự.");
-      return;
-    }
-
-    sendButton.disabled = true;
-
-    const profile = profilesCache[currentUser.id];
-
-    const { error } = await supabaseClient
-      .from("messages")
-      .insert({
-        user_id: currentUser.id,
-        username: profile?.username || currentUser.email?.split("@")[0] || "User",
-        content
-      });
-
-    if (error) {
-      console.error(error);
-      alert("Không gửi được tin nhắn.\n" + error.message);
-    } else {
-      messageInput.value = "";
-      messageInput.focus();
-    }
-
-    sendButton.disabled = false;
-  });
-
-  const channel = supabaseClient
-    .channel("messages-realtime")
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages"
-      },
-      payload => {
-        showMessage(payload.new);
-      }
-    )
-    .subscribe(status => {
-      console.log("Realtime:", status);
-
-      if (status === "SUBSCRIBED") {
-        statusBox.textContent = "🟢 Đã kết nối realtime";
-      } else if (status === "CHANNEL_ERROR") {
-        statusBox.textContent = "🔴 Realtime đang gặp lỗi";
-      } else if (status === "TIMED_OUT") {
-        statusBox.textContent = "🟡 Realtime hết thời gian";
-      }
-    });
-
-  async function showApp(user) {
-    currentUser = user;
-    authBox.style.display = "none";
-    mainBox.style.display = "flex";
-    logoutButton.style.display = "block";
-    myEmail.textContent = user.email || "";
-
-    const profile = await getMyProfile();
-
-    if (profile) {
-      myName.textContent = profile.username;
-      myAvatar.innerHTML = avatarHtml(profile);
-    }
-
-    await loadUsers();
-    await loadMessages();
-  }
-
-  function showAuth() {
-    currentUser = null;
-    authBox.style.display = "block";
-    mainBox.style.display = "none";
-    logoutButton.style.display = "none";
-    authNotice.textContent = "";
-  }
-
-  supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    if (session?.user) {
-      await showApp(session.user);
-    } else {
-      showAuth();
-    }
-  });
-
-  (async () => {
-    const { data } = await supabaseClient.auth.getSession();
-
-    if (data.session?.user) {
-      await showApp(data.session.user);
-    } else {
-      showAuth();
-    }
-  })();
-</script>
-</body>
-</html>
+function showMessage(m){
+  const empty=messagesBox.querySelector(".empty");if(empty)empty.remove();
+  if(messagesBox.querySelector(`[data-id="${m.id}"]`))return;
+  const p=profilesCache[m.user_id]||{username:m.username||"User",avatar_url:""};
+  const d=document.createElement("div");d.className="message";d.dataset.id=m.id;
+  d.innerHTML=`${avatarHtml(p,true)}<div class="message-body"><div class="message-top"><div class="name">${escapeHtml(p.username||m.username||"User")}</div><div class="time">${formatTime(m.created_at)}</div></div><div class="text">${escapeHtml(m.content)}</div></div>`;
+  messagesBox.appendChild(d);messagesBox.scrollTop=messagesBox.scrollHeight;
+}
+async function loadMessages(){
+  const {data,error}=await supabaseClient.from("messages").select("*").order("created_at",{ascen
