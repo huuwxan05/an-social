@@ -3,134 +3,172 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>An Social - Chat</title>
-
-  <!-- Supabase -->
+  <title>An Social</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f2f4f7;
       color: #222;
     }
-
+    button, input { font: inherit; }
+    button { cursor: pointer; }
     .app {
-      max-width: 700px;
-      height: 100vh;
+      max-width: 900px;
+      min-height: 100vh;
       margin: auto;
+      background: white;
       display: flex;
       flex-direction: column;
-      background: white;
     }
-
     .header {
-      padding: 16px;
+      padding: 14px 16px;
       background: #2563eb;
       color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
     }
-
-    .header h1 {
-      margin: 0;
-      font-size: 21px;
-    }
-
-    .header small {
-      opacity: 0.85;
-    }
-
-    .user-box {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      background: #fafafa;
-    }
-
-    .user-box input {
-      width: 100%;
-      padding: 11px;
-      border: 1px solid #ccc;
+    .header h1 { margin: 0; font-size: 21px; }
+    .header small { opacity: .85; }
+    .header button {
+      border: 0;
+      background: rgba(255,255,255,.16);
+      color: white;
+      padding: 8px 11px;
       border-radius: 8px;
-      font-size: 15px;
+    }
+
+    .auth {
+      padding: 22px 16px;
+      max-width: 480px;
+      width: 100%;
+      margin: auto;
+    }
+    .auth h2 { margin-top: 0; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+    .tabs button {
+      flex: 1;
+      border: 1px solid #ddd;
+      background: #f5f5f5;
+      padding: 11px;
+      border-radius: 9px;
+    }
+    .tabs button.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+    .field { margin-bottom: 10px; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 5px;
+    }
+    .field input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 9px;
       outline: none;
     }
-
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 15px;
-      background: #f7f8fa;
-    }
-
-    .message {
-      background: white;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-
-    .message .name {
+    .primary {
+      width: 100%;
+      border: 0;
+      background: #2563eb;
+      color: white;
+      padding: 12px;
+      border-radius: 9px;
       font-weight: bold;
-      color: #2563eb;
-      margin-bottom: 4px;
     }
-
-    .message .text {
-      word-wrap: break-word;
+    .notice {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
       white-space: pre-wrap;
     }
 
-    .message .time {
-      margin-top: 5px;
-      font-size: 11px;
-      color: #999;
+    .main { display: none; flex: 1; min-height: 0; }
+    .sidebar {
+      width: 250px;
+      border-right: 1px solid #ddd;
+      background: #fafafa;
+      overflow-y: auto;
     }
-
-    .empty {
-      text-align: center;
-      color: #888;
-      margin-top: 30px;
+    .profile {
+      padding: 14px;
+      border-bottom: 1px solid #ddd;
     }
-
-    .send-box {
+    .profile-row, .person {
       display: flex;
-      gap: 8px;
-      padding: 10px;
-      border-top: 1px solid #ddd;
-      background: white;
+      align-items: center;
+      gap: 10px;
     }
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #dbeafe;
+      flex: 0 0 auto;
+    }
+    .avatar.small { width: 34px; height: 34px; }
+    .initial {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-weight: bold;
+      flex: 0 0 auto;
+    }
+    .profile-name { font-weight: bold; }
+    .profile-email { font-size: 11px; color: #777; overflow: hidden; text-overflow: ellipsis; }
+    .avatar-actions {
+      display: flex;
+      gap: 7px;
+      margin-top: 10px;
+    }
+    .avatar-actions label, .avatar-actions button {
+      border: 1px solid #ddd;
+      background: white;
+      padding: 7px 9px;
+      border-radius: 7px;
+      font-size: 12px;
+    }
+    #avatarFile { display: none; }
 
-    .send-box input {
+    .people-title {
+      padding: 11px 14px 6px;
+      font-size: 12px;
+      color: #777;
+      font-weight: bold;
+    }
+    .person {
+      padding: 9px 14px;
+    }
+    .person-name { font-size: 14px; font-weight: 600; }
+    .online { color: #16a34a; font-size: 11px; }
+
+    .chat {
       flex: 1;
       min-width: 0;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 15px;
-      outline: none;
+      display: flex;
+      flex-direction: column;
     }
-
-    .send-box button {
-      border: none;
-      background: #2563eb;
-      color: white;
-      padding: 0 18px;
-      border-radius: 10px;
-      font-size: 15px;
+    .chat-title {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
       font-weight: bold;
-      cursor: pointer;
     }
-
-    .send-box button:disabled {
-      opacity: 0.5;
-    }
-
     #status {
       text-align: center;
       font-size: 12px;
@@ -138,113 +176,230 @@
       color: #777;
       background: #fafafa;
     }
+    #messages {
+      flex: 1;
+      min-height: 260px;
+      overflow-y: auto;
+      padding: 15px;
+      background: #f7f8fa;
+    }
+    .message {
+      display: flex;
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+    .message-body {
+      min-width: 0;
+      background: white;
+      padding: 9px 11px;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .message .name {
+      font-weight: bold;
+      color: #2563eb;
+      margin-bottom: 3px;
+    }
+    .message .text {
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .message .time {
+      margin-top: 5px;
+      font-size: 10px;
+      color: #999;
+    }
+    .empty {
+      text-align: center;
+      color: #888;
+      margin-top: 30px;
+    }
+    .send-box {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background: white;
+    }
+    .send-box input {
+      flex: 1;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      outline: none;
+    }
+    .send-box button {
+      border: 0;
+      background: #2563eb;
+      color: white;
+      padding: 0 18px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+    .send-box button:disabled { opacity: .5; }
+
+    @media (max-width: 650px) {
+      .main { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        border-right: 0;
+        border-bottom: 1px solid #ddd;
+        max-height: 260px;
+      }
+      .people-list {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 5px;
+      }
+      .person { min-width: 120px; }
+      .profile { padding: 10px 14px; }
+    }
   </style>
 </head>
 
 <body>
-
 <div class="app">
 
   <div class="header">
-    <h1>💬 An Social</h1>
-    <small>Phòng chat cộng đồng</small>
+    <div>
+      <h1>💬 An Social</h1>
+      <small>Mạng xã hội mini</small>
+    </div>
+    <button id="logoutButton" style="display:none">Đăng xuất</button>
   </div>
 
-  <div class="user-box">
-    <input
-      id="username"
-      type="text"
-      maxlength="30"
-      placeholder="Nhập tên của bạn..."
-    >
-  </div>
+  <!-- AUTH -->
+  <section class="auth" id="authBox">
+    <h2 id="authTitle">Đăng nhập</h2>
 
-  <div id="status">
-    Đang kết nối...
-  </div>
+    <div class="tabs">
+      <button id="loginTab" class="active" type="button">Đăng nhập</button>
+      <button id="signupTab" type="button">Đăng ký</button>
+    </div>
 
-  <div id="messages">
-    <div class="empty">Đang tải tin nhắn...</div>
-  </div>
+    <div class="field" id="usernameField" style="display:none">
+      <label>Tên hiển thị</label>
+      <input id="authUsername" maxlength="30" placeholder="Ví dụ: An">
+    </div>
 
-  <form class="send-box" id="sendForm">
-    <input
-      id="messageInput"
-      type="text"
-      maxlength="1000"
-      placeholder="Nhập tin nhắn..."
-      autocomplete="off"
-    >
+    <div class="field">
+      <label>Email</label>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    </div>
 
-    <button id="sendButton" type="submit">
-      Gửi
-    </button>
-  </form>
+    <div class="field">
+      <label>Mật khẩu</label>
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="Ít nhất 6 ký tự">
+    </div>
 
+    <button class="primary" id="authButton" type="button">Đăng nhập</button>
+    <div class="notice" id="authNotice"></div>
+  </section>
+
+  <!-- MAIN -->
+  <section class="main" id="mainBox">
+
+    <aside class="sidebar">
+      <div class="profile">
+        <div class="profile-row">
+          <div id="myAvatar"></div>
+          <div style="min-width:0">
+            <div class="profile-name" id="myName">...</div>
+            <div class="profile-email" id="myEmail">...</div>
+          </div>
+        </div>
+
+        <div class="avatar-actions">
+          <label for="avatarFile">📷 Đổi avatar</label>
+          <button id="refreshUsers" type="button">↻</button>
+          <input id="avatarFile" type="file" accept="image/*">
+        </div>
+      </div>
+
+      <div class="people-title">👥 Người dùng</div>
+      <div class="people-list" id="peopleList">
+        <div class="empty">Đang tải...</div>
+      </div>
+    </aside>
+
+    <div class="chat">
+      <div class="chat-title">💬 Phòng chat cộng đồng</div>
+
+      <div id="status">Đang kết nối...</div>
+
+      <div id="messages">
+        <div class="empty">Đang tải tin nhắn...</div>
+      </div>
+
+      <form class="send-box" id="sendForm">
+        <input id="messageInput" type="text" maxlength="1000"
+               placeholder="Nhập tin nhắn..." autocomplete="off">
+        <button id="sendButton" type="submit">Gửi</button>
+      </form>
+    </div>
+
+  </section>
 </div>
 
 <script>
-  // ==========================================
-  // SUPABASE CONFIG
-  // ==========================================
-
-  const SUPABASE_URL =
-    "https://imrzrizgpdqqvwtpdubw.supabase.co";
-
-  const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_8PDE1uUUqeuA33pyaqjQhA_VBcFWtNY";
+  const SUPABASE_URL = "https://imrzrizgpdqqvwtpdubw.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8PDE1uUUqeuA33pyaqjQhA_VBcFWtNY";
 
   const supabaseClient = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY
   );
 
-
-  // ==========================================
-  // ELEMENTS
-  // ==========================================
-
-  const usernameInput = document.getElementById("username");
-  const messageInput = document.getElementById("messageInput");
+  const authBox = document.getElementById("authBox");
+  const mainBox = document.getElementById("mainBox");
+  const authTitle = document.getElementById("authTitle");
+  const authButton = document.getElementById("authButton");
+  const authNotice = document.getElementById("authNotice");
+  const loginTab = document.getElementById("loginTab");
+  const signupTab = document.getElementById("signupTab");
+  const usernameField = document.getElementById("usernameField");
+  const authUsername = document.getElementById("authUsername");
+  const authEmail = document.getElementById("authEmail");
+  const authPassword = document.getElementById("authPassword");
+  const logoutButton = document.getElementById("logoutButton");
+  const myAvatar = document.getElementById("myAvatar");
+  const myName = document.getElementById("myName");
+  const myEmail = document.getElementById("myEmail");
+  const avatarFile = document.getElementById("avatarFile");
+  const peopleList = document.getElementById("peopleList");
+  const refreshUsers = document.getElementById("refreshUsers");
   const messagesBox = document.getElementById("messages");
+  const messageInput = document.getElementById("messageInput");
   const sendForm = document.getElementById("sendForm");
   const sendButton = document.getElementById("sendButton");
   const statusBox = document.getElementById("status");
 
-
-  // ==========================================
-  // SAVE USERNAME
-  // ==========================================
-
-  usernameInput.value =
-    localStorage.getItem("an_social_username") || "";
-
-  usernameInput.addEventListener("input", () => {
-    localStorage.setItem(
-      "an_social_username",
-      usernameInput.value.trim()
-    );
-  });
-
-
-  // ==========================================
-  // ESCAPE HTML
-  // ==========================================
+  let authMode = "login";
+  let currentUser = null;
+  let profilesCache = {};
 
   function escapeHtml(text) {
     const div = document.createElement("div");
-    div.textContent = text;
+    div.textContent = text ?? "";
     return div.innerHTML;
   }
 
+  function initials(name) {
+    const s = (name || "?").trim();
+    return escapeHtml(s.charAt(0).toUpperCase());
+  }
 
-  // ==========================================
-  // FORMAT TIME
-  // ==========================================
+  function avatarHtml(profile, small = false) {
+    const cls = small ? "avatar small" : "avatar";
+    if (profile && profile.avatar_url) {
+      return `<img class="${cls}" src="${escapeHtml(profile.avatar_url)}" alt="avatar">`;
+    }
+    return `<div class="${small ? "avatar small" : "initial"}">${initials(profile?.username || "?")}</div>`;
+  }
 
   function formatTime(dateString) {
     const date = new Date(dateString);
-
     return date.toLocaleString("vi-VN", {
       day: "2-digit",
       month: "2-digit",
@@ -253,70 +408,265 @@
     });
   }
 
+  function setAuthMode(mode) {
+    authMode = mode;
+    const signup = mode === "signup";
 
-  // ==========================================
-  // SHOW MESSAGE
-  // ==========================================
+    authTitle.textContent = signup ? "Tạo tài khoản" : "Đăng nhập";
+    authButton.textContent = signup ? "Đăng ký" : "Đăng nhập";
+    usernameField.style.display = signup ? "block" : "none";
+    loginTab.classList.toggle("active", !signup);
+    signupTab.classList.toggle("active", signup);
+    authNotice.textContent = "";
+  }
 
-  function showMessage(message) {
+  loginTab.onclick = () => setAuthMode("login");
+  signupTab.onclick = () => setAuthMode("signup");
 
-    const empty = messagesBox.querySelector(".empty");
+  authButton.onclick = async () => {
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+    const username = authUsername.value.trim();
 
-    if (empty) {
-      empty.remove();
+    if (!email || !password) {
+      authNotice.textContent = "Hãy nhập email và mật khẩu.";
+      return;
     }
 
+    if (password.length < 6) {
+      authNotice.textContent = "Mật khẩu cần ít nhất 6 ký tự.";
+      return;
+    }
+
+    if (authMode === "signup" && !username) {
+      authNotice.textContent = "Hãy nhập tên hiển thị.";
+      return;
+    }
+
+    authButton.disabled = true;
+    authNotice.textContent = "Đang xử lý...";
+
+    if (authMode === "signup") {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { username }
+        }
+      });
+
+      if (error) {
+        authNotice.textContent = "❌ " + error.message;
+      } else if (data.session) {
+        authNotice.textContent = "✅ Đăng ký thành công.";
+      } else {
+        authNotice.textContent =
+          "✅ Đăng ký thành công. Hãy kiểm tra email để xác nhận tài khoản rồi đăng nhập.";
+      }
+    } else {
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        authNotice.textContent = "❌ " + error.message;
+      } else {
+        authNotice.textContent = "";
+      }
+    }
+
+    authButton.disabled = false;
+  };
+
+  logoutButton.onclick = async () => {
+    await supabaseClient.auth.signOut();
+  };
+
+  async function getMyProfile() {
+    if (!currentUser) return null;
+
+    let { data, error } = await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
+    if (!data) {
+      const fallbackName =
+        currentUser.user_metadata?.username ||
+        currentUser.email?.split("@")[0] ||
+        "User";
+
+      const result = await supabaseClient
+        .from("profiles")
+        .insert({
+          id: currentUser.id,
+          username: fallbackName
+        })
+        .select()
+        .single();
+
+      data = result.data;
+    }
+
+    return data;
+  }
+
+  async function loadUsers() {
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .select("id, username, avatar_url, created_at")
+      .order("username", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      peopleList.innerHTML = `<div class="empty">Không tải được danh sách người dùng.</div>`;
+      return;
+    }
+
+    profilesCache = {};
+    (data || []).forEach(p => profilesCache[p.id] = p);
+
+    peopleList.innerHTML = "";
+
+    if (!data || data.length === 0) {
+      peopleList.innerHTML = `<div class="empty">Chưa có người dùng.</div>`;
+      return;
+    }
+
+    data.forEach(profile => {
+      const div = document.createElement("div");
+      div.className = "person";
+      div.innerHTML = `
+        ${avatarHtml(profile, true)}
+        <div>
+          <div class="person-name">${escapeHtml(profile.username)}</div>
+          <div class="online">● Thành viên</div>
+        </div>
+      `;
+      peopleList.appendChild(div);
+    });
+
+    if (currentUser) {
+      const me = profilesCache[currentUser.id];
+      if (me) {
+        myName.textContent = me.username;
+        myAvatar.innerHTML = avatarHtml(me);
+      }
+    }
+  }
+
+  async function uploadAvatar(file) {
+    if (!currentUser || !file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Vui lòng chọn file ảnh.");
+      return;
+    }
+
+    if (file.size > 3 * 1024 * 1024) {
+      alert("Ảnh tối đa 3MB.");
+      return;
+    }
+
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `${currentUser.id}/${Date.now()}.${ext}`;
+
+    avatarFile.disabled = true;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from("avatars")
+      .upload(path, file, {
+        cacheControl: "3600",
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error(uploadError);
+      alert("Không tải được avatar: " + uploadError.message);
+      avatarFile.disabled = false;
+      return;
+    }
+
+    const { data: publicData } = supabaseClient.storage
+      .from("avatars")
+      .getPublicUrl(path);
+
+    const avatarUrl = publicData.publicUrl;
+
+    const { error: updateError } = await supabaseClient
+      .from("profiles")
+      .update({ avatar_url: avatarUrl })
+      .eq("id", currentUser.id);
+
+    if (updateError) {
+      console.error(updateError);
+      alert("Không lưu được avatar: " + updateError.message);
+    } else {
+      await loadUsers();
+      alert("✅ Đã đổi avatar.");
+    }
+
+    avatarFile.disabled = false;
+    avatarFile.value = "";
+  }
+
+  avatarFile.addEventListener("change", () => {
+    uploadAvatar(avatarFile.files[0]);
+  });
+
+  refreshUsers.onclick = loadUsers;
+
+  function showMessage(message) {
+    const empty = messagesBox.querySelector(".empty");
+    if (empty) empty.remove();
+
+    if (messagesBox.querySelector(`[data-id="${message.id}"]`)) return;
+
+    const profile = profilesCache[message.user_id] || {
+      username: message.username || "User",
+      avatar_url: ""
+    };
+
     const div = document.createElement("div");
-
     div.className = "message";
-
     div.dataset.id = message.id;
 
     div.innerHTML = `
-      <div class="name">
-        ${escapeHtml(message.username)}
-      </div>
-
-      <div class="text">
-        ${escapeHtml(message.content)}
-      </div>
-
-      <div class="time">
-        ${formatTime(message.created_at)}
+      ${avatarHtml(profile, true)}
+      <div class="message-body">
+        <div class="name">${escapeHtml(profile.username || message.username || "User")}</div>
+        <div class="text">${escapeHtml(message.content)}</div>
+        <div class="time">${formatTime(message.created_at)}</div>
       </div>
     `;
 
     messagesBox.appendChild(div);
-
     messagesBox.scrollTop = messagesBox.scrollHeight;
   }
 
-
-  // ==========================================
-  // LOAD OLD MESSAGES
-  // ==========================================
-
   async function loadMessages() {
-
     const { data, error } = await supabaseClient
       .from("messages")
       .select("*")
-      .order("created_at", {
-        ascending: true
-      })
+      .order("created_at", { ascending: true })
       .limit(100);
 
     if (error) {
       console.error(error);
-
       messagesBox.innerHTML = `
         <div class="empty">
-          Không tải được tin nhắn.
+          Không tải được tin nhắn.<br><br>
+          ${escapeHtml(error.message)}
         </div>
       `;
-
       statusBox.textContent = "❌ Lỗi kết nối";
-
       return;
     }
 
@@ -335,29 +685,14 @@
     data.forEach(showMessage);
   }
 
-
-  // ==========================================
-  // SEND MESSAGE
-  // ==========================================
-
-  sendForm.addEventListener("submit", async (event) => {
-
+  sendForm.addEventListener("submit", async event => {
     event.preventDefault();
 
-    const username = usernameInput.value.trim();
+    if (!currentUser) return;
+
     const content = messageInput.value.trim();
 
-    if (!username) {
-      alert("Bạn hãy nhập tên trước nhé!");
-      usernameInput.focus();
-      return;
-    }
-
-    if (!content) {
-      messageInput.focus();
-      return;
-    }
-
+    if (!content) return;
     if (content.length > 1000) {
       alert("Tin nhắn tối đa 1000 ký tự.");
       return;
@@ -365,20 +700,19 @@
 
     sendButton.disabled = true;
 
+    const profile = profilesCache[currentUser.id];
+
     const { error } = await supabaseClient
       .from("messages")
       .insert({
-        username: username,
-        content: content
+        user_id: currentUser.id,
+        username: profile?.username || currentUser.email?.split("@")[0] || "User",
+        content
       });
 
     if (error) {
       console.error(error);
-
-      alert(
-        "Không gửi được tin nhắn.\n" +
-        "Chi tiết: " + error.message
-      );
+      alert("Không gửi được tin nhắn.\n" + error.message);
     } else {
       messageInput.value = "";
       messageInput.focus();
@@ -387,14 +721,8 @@
     sendButton.disabled = false;
   });
 
-
-  // ==========================================
-  // REALTIME
-  // ==========================================
-
   const channel = supabaseClient
     .channel("messages-realtime")
-
     .on(
       "postgres_changes",
       {
@@ -402,50 +730,65 @@
         schema: "public",
         table: "messages"
       },
-      (payload) => {
-
-        console.log("Tin nhắn mới:", payload.new);
-
-        // Tránh hiển thị trùng
-        if (
-          messagesBox.querySelector(
-            `[data-id="${payload.new.id}"]`
-          )
-        ) {
-          return;
-        }
-
+      payload => {
         showMessage(payload.new);
       }
     )
-
-    .subscribe((status) => {
-
+    .subscribe(status => {
       console.log("Realtime:", status);
 
       if (status === "SUBSCRIBED") {
         statusBox.textContent = "🟢 Đã kết nối realtime";
-      }
-
-      if (status === "CHANNEL_ERROR") {
-        statusBox.textContent =
-          "🔴 Realtime đang gặp lỗi";
-      }
-
-      if (status === "TIMED_OUT") {
-        statusBox.textContent =
-          "🟡 Kết nối realtime hết thời gian";
+      } else if (status === "CHANNEL_ERROR") {
+        statusBox.textContent = "🔴 Realtime đang gặp lỗi";
+      } else if (status === "TIMED_OUT") {
+        statusBox.textContent = "🟡 Realtime hết thời gian";
       }
     });
 
+  async function showApp(user) {
+    currentUser = user;
+    authBox.style.display = "none";
+    mainBox.style.display = "flex";
+    logoutButton.style.display = "block";
+    myEmail.textContent = user.email || "";
 
-  // ==========================================
-  // START
-  // ==========================================
+    const profile = await getMyProfile();
 
-  loadMessages();
+    if (profile) {
+      myName.textContent = profile.username;
+      myAvatar.innerHTML = avatarHtml(profile);
+    }
 
+    await loadUsers();
+    await loadMessages();
+  }
+
+  function showAuth() {
+    currentUser = null;
+    authBox.style.display = "block";
+    mainBox.style.display = "none";
+    logoutButton.style.display = "none";
+    authNotice.textContent = "";
+  }
+
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if (session?.user) {
+      await showApp(session.user);
+    } else {
+      showAuth();
+    }
+  });
+
+  (async () => {
+    const { data } = await supabaseClient.auth.getSession();
+
+    if (data.session?.user) {
+      await showApp(data.session.user);
+    } else {
+      showAuth();
+    }
+  })();
 </script>
-
 </body>
 </html>
